@@ -95,24 +95,21 @@
   </form>
 
   <script>
-  // ✅ Connect Supabase
-    const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE';
-    const supabaseClient = createClient(supabaseUrl, supabaseKey);
+  // Initialize Supabase client
+  const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE';
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
   async function submitApplication(event) {
     event.preventDefault();
 
-    // Step 1: Upload ID Copy to Storage
     const fileInput = document.getElementById("id");
     const file = fileInput.files[0];
-
     if (!file) {
       alert("Please upload an ID file.");
       return;
     }
-
-    const filename = `${Date.now()}_${file.name}`; // unique name
+    const filename = `${Date.now()}_${file.name}`;
 
     const { data: uploadData, error: uploadError } = await supabase
       .storage
@@ -124,7 +121,6 @@
       return;
     }
 
-    // Step 2: Get the public URL of uploaded file
     const { data: urlData } = supabase
       .storage
       .from("id_copies")
@@ -132,7 +128,6 @@
 
     const id_copy_url = urlData.publicUrl;
 
-    // Step 3: Get other form values
     const applicant = {
       name: document.getElementById("name").value,
       surname: document.getElementById("surname").value,
@@ -143,7 +138,7 @@
       phone2: document.getElementById("phone2").value,
       email: document.getElementById("email").value,
       address: document.getElementById("address").value,
-      id_copy_url: id_copy_url // ✅ Save URL here
+      id_copy_url: id_copy_url
     };
 
     const employment = {
@@ -164,7 +159,7 @@
       phone: document.getElementById("gphone").value
     };
 
-    // Step 4: Insert into applicants table
+    // Insert applicant and get id
     const { data: applicantData, error: applicantError } = await supabase
       .from("applicants")
       .insert([applicant])
@@ -177,7 +172,7 @@
 
     const applicant_id = applicantData[0].applicant_id;
 
-    // Step 5: Insert related info
+    // Insert employment, loan, guarantor
     await supabase.from("employment").insert([{ applicant_id, ...employment }]);
     await supabase.from("loan_applications").insert([{ applicant_id, ...loan }]);
     await supabase.from("guarantors").insert([{ applicant_id, ...guarantor }]);
