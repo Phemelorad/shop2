@@ -47,7 +47,7 @@
     </p>
 
     <p>
-      ID Copy:<input type="file" id="id" accept="image/*,.pdf" required><br>
+      ID Copy:<input type="file" id="id" accept=".jpg,image/jpeg" required>
       Email: <input type="email" id="email" required placeholder="johndoe@yahoo.com"><br>
       Residential Address: <input type="text" id="address" required>
     </p>
@@ -96,8 +96,11 @@
 
   <script>
   const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE';
-  const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE';
+
+const { createClient } = supabase;
+const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
 
   async function submitApplication(event) {
     event.preventDefault();
@@ -108,7 +111,8 @@
       alert("Please upload an ID file.");
       return;
     }
-    const filename = `${Date.now()}_${file.name}`;
+    const filename = `public/${Date.now()}_${file.name}`; 
+
 
     const { data: uploadData, error: uploadError } = await supabaseClient
       .storage
