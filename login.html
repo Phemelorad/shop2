@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <h2>Login</h2>
+    <form onsubmit="handleLogin(event)">
+        Username: <input type="text" id="username" required><br><br>
+        Password: <input type="password" id="password" required><br><br>
+        <input type="submit" value="Login">
+    </form>
+
+    <p>Don't have an account? <a href="Index.html">Register here</a></p>
+
+    <!-- Load Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+
+    <script>
+      const { createClient } = supabase;
+      const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // same key
+      const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+      async function handleLogin(e) {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        const { data, error } = await supabaseClient
+          .from('login')
+          .select('username, passwordhash')
+          .eq('username', username)
+          .single();
+
+        if (error || !data) {
+          alert('Invalid username or user not found.');
+          return;
+        }
+
+        if (data.passwordhash === password) {
+          alert('Login successful!');
+          window.location.href = 'dashboard.html'; // Change to your destination page
+        } else {
+          alert('Incorrect password.');
+        }
+      }
+    </script>
+</body>
+</html>

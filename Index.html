@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+</head>
+<body>
+    <h2>Register</h2>
+    <form onsubmit="handleRegister(event)">
+        Username: <input type="text" id="username" required><br><br>
+        Password: <input type="password" id="password" required><br><br>
+        Email: <input type="email" id="email" required><br><br>
+        <input type="submit" value="Register">
+    </form>
+
+    <p>Already have an account? <a href="login.html">Login here</a></p>
+
+    <!-- Load Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+
+    <script>
+      const { createClient } = supabase;
+      const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // trimmed for clarity
+      const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+      async function handleRegister(e) {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const email = document.getElementById('email').value;
+
+        const { error } = await supabaseClient.from('login').insert([
+          { username, passwordhash: password, email }
+        ]);
+
+        if (error) {
+          alert('Registration failed: ' + error.message);
+        } else {
+          alert('User registered successfully!');
+        }
+      }
+    </script>
+</body>
+</html>
