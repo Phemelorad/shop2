@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login</title>
+    <title>Register</title>
 </head>
 <body>
-    <h2>Login</h2>
-    <form onsubmit="handleLogin(event)">
+    <h2>Register</h2>
+    <form onsubmit="handleRegister(event)">
         Username: <input type="text" id="username" required><br><br>
         Password: <input type="password" id="password" required><br><br>
-        <input type="submit" value="Login">
+        Email: <input type="email" id="email" required><br><br>
+        <input type="submit" value="Register">
     </form>
 
-    <p>Don't have an account? <a href="index.html">Register here</a></p>
+    <p>Already have an account? <a href="login.html">Login here</a></p>
 
     <!-- Load Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
@@ -22,27 +23,20 @@
       const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE';
       const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
-      async function handleLogin(e) {
+      async function handleRegister(e) {
         e.preventDefault();
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
+        const email = document.getElementById('email').value;
 
-        const { data, error } = await supabaseClient
-          .from('login')
-          .select('username, passwordhash')
-          .eq('username', username)
-          .single();
+        const { error } = await supabaseClient.from('login').insert([
+          { username, passwordhash: password, email }
+        ]);
 
-        if (error || !data) {
-          alert('Invalid username or user not found.');
-          return;
-        }
-
-        if (data.passwordhash === password) {
-          alert('Login successful!');
-          window.location.href = 'dashboard.html'; // Change to your destination page
+        if (error) {
+          alert('Registration failed: ' + error.message);
         } else {
-          alert('Incorrect password.');
+          alert('User registered successfully!');
         }
       }
     </script>
