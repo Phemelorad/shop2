@@ -148,10 +148,11 @@
     };
 
     const loan = {
-      amount: parseFloat(document.getElementById("amount").value),
-      repayment_months: parseInt(document.getElementById("repayment").value),
-      bank_account: document.getElementById("bad").value
-    };
+  loan_amount: parseFloat(document.getElementById("amount").value), // ✅ corrected name
+  repayment_months: parseInt(document.getElementById("repayment").value),
+  bank_account: document.getElementById("bad").value
+};
+
 
     const guarantor = {
       name: document.getElementById("gname").value,
