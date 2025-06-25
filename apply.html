@@ -95,10 +95,9 @@
   </form>
 
   <script>
-  const { createClient } = supabase;
-      const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
-      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE';
-      const supabaseClient = createClient(supabaseUrl, supabaseKey);
+  const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE';
+  const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
   async function submitApplication(event) {
     event.preventDefault();
@@ -111,7 +110,7 @@
     }
     const filename = `${Date.now()}_${file.name}`;
 
-    const { data: uploadData, error: uploadError } = await supabase
+    const { data: uploadData, error: uploadError } = await supabaseClient
       .storage
       .from("id_copies")
       .upload(filename, file);
@@ -121,7 +120,7 @@
       return;
     }
 
-    const { data: urlData } = supabase
+    const { data: urlData } = supabaseClient
       .storage
       .from("id_copies")
       .getPublicUrl(filename);
@@ -148,11 +147,10 @@
     };
 
     const loan = {
-  loan_amount: parseFloat(document.getElementById("amount").value), // ✅ corrected name
-  repayment_months: parseInt(document.getElementById("repayment").value),
-  bank_account: document.getElementById("bad").value
-};
-
+      loan_amount: parseFloat(document.getElementById("amount").value),
+      repayment_months: parseInt(document.getElementById("repayment").value),
+      bank_account: document.getElementById("bad").value
+    };
 
     const guarantor = {
       name: document.getElementById("gname").value,
@@ -160,8 +158,7 @@
       phone: document.getElementById("gphone").value
     };
 
-    // Insert applicant and get id
-    const { data: applicantData, error: applicantError } = await supabase
+    const { data: applicantData, error: applicantError } = await supabaseClient
       .from("applicants")
       .insert([applicant])
       .select();
@@ -173,15 +170,15 @@
 
     const applicant_id = applicantData[0].applicant_id;
 
-    // Insert employment, loan, guarantor
-    await supabase.from("employment").insert([{ applicant_id, ...employment }]);
-    await supabase.from("loan_applications").insert([{ applicant_id, ...loan }]);
-    await supabase.from("guarantors").insert([{ applicant_id, ...guarantor }]);
+    await supabaseClient.from("employment").insert([{ applicant_id, ...employment }]);
+    await supabaseClient.from("loan_applications").insert([{ applicant_id, ...loan }]);
+    await supabaseClient.from("guarantors").insert([{ applicant_id, ...guarantor }]);
 
     alert("✅ Loan application submitted successfully!");
     document.querySelector("form").reset();
   }
 </script>
+
 
 
  
