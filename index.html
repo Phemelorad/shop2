@@ -6,43 +6,44 @@
 </head>
 <body>
   <h1 class="txt">RADIPODI MICRO LOANS</h1>
-    <section>
+  <section>
     <form onsubmit="handleRegister(event)">
-        <h2>Register</h2>
-        Username: <input type="text" id="username" required><br><br>
-        Password: <input type="password" id="password" required><br><br>
-        Email: <input type="email" id="email" required><br><br>
-        <input type="submit" value="Register">
+      <h2>Register</h2>
+      Email: <input type="email" id="email" required><br><br>
+      Password: <input type="password" id="password" required><br><br>
+      <input type="submit" value="Register">
     </form>
-    </section>
+  </section>
 
-    <p class="txt">Already have an account? <a href="login.html">Login here</a></p>
+  <p class="txt">Already have an account? <a href="login.html">Login here</a></p>
 
-    <!-- Load Supabase JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+  <!-- Load Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
 
-    <script>
-      const { createClient } = supabase;
-      const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
-      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE';
-      const supabaseClient = createClient(supabaseUrl, supabaseKey);
+  <script>
+    const { createClient } = supabase;
+    const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
+    const supabaseKey = 'YOUR_ANON_PUBLIC_KEY'; // Use your anon public key here
+    const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
-      async function handleRegister(e) {
-        e.preventDefault();
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        const email = document.getElementById('email').value;
+    async function handleRegister(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
 
-        const { error } = await supabaseClient.from('login').insert([
-          { username, passwordhash: password, email }
-        ]);
+      const { data, error } = await supabaseClient.auth.signUp({
+        email: email,
+        password: password,
+      });
 
-        if (error) {
-          alert('Registration failed: ' + error.message);
-        } else {
-          alert('User registered successfully!');
-        }
+      if (error) {
+        alert('Registration failed: ' + error.message);
+      } else {
+        alert('Registration successful! Please check your email to verify your account.');
+        // Optionally redirect to login page:
+        // window.location.href = 'login.html';
       }
-    </script>
+    }
+  </script>
 </body>
 </html>
