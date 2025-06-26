@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="form.css" />
   <link rel="stylesheet" href="navigation.css" />
   <link rel="stylesheet" href="header.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
 </head>
 <header class="txt">
   <h1>RADIPODI MICRO LOANS</h1>
@@ -95,16 +95,6 @@
     async function submitApplication(event) {
       event.preventDefault();
 
-      // Optional: check if user is logged in (remove if you want open access)
-      const {
-        data: { user },
-        error: userError,
-      } = await supabaseClient.auth.getUser();
-
-      if (userError || !user) {
-        alert("❌ You must be logged in to submit an application.");
-        return;
-      }
 
       const applicant = {
         name: document.getElementById("name").value,
@@ -157,11 +147,9 @@
     }
   </script>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+  
 <script>
-  const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE';
-  const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+ 
 
   async function updateUserInfo() {
     const { data: { user }, error } = await supabaseClient.auth.getUser();
@@ -192,7 +180,7 @@
     } else {
       updateUserInfo();
       // Optional: redirect after logout
-      // window.location.href = 'login.html';
+       window.location.href = 'login.html';
     }
   });
 
