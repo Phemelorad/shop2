@@ -18,6 +18,12 @@
       <button onclick="location.href='repay.html'">Repay</button>
     </div>
   </section>
+  <div id="user-info" style="font-family: Arial, sans-serif; padding: 10px; background: #eee; display: flex; align-items: center; gap: 15px;">
+  <span id="user-email" style="font-weight: bold;"></span>
+  <button id="logout-btn" style="display:none; padding: 5px 10px; cursor: pointer;">Logout</button>
+  <a href="login.html" id="login-link" style="text-decoration: none; color: blue;">Login</a>
+</div>
+
 </header>
 <body>
   <form class="frm" onsubmit="submitApplication(event)">
@@ -150,5 +156,49 @@
       document.querySelector("form").reset();
     }
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+<script>
+  const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE';
+  const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+  async function updateUserInfo() {
+    const { data: { user }, error } = await supabaseClient.auth.getUser();
+
+    const userEmailSpan = document.getElementById('user-email');
+    const logoutBtn = document.getElementById('logout-btn');
+    const loginLink = document.getElementById('login-link');
+
+    if (error) {
+      console.error('Error getting user:', error);
+    }
+
+    if (user) {
+      userEmailSpan.textContent = `Logged in as: ${user.email}`;
+      logoutBtn.style.display = 'inline-block';
+      loginLink.style.display = 'none';
+    } else {
+      userEmailSpan.textContent = '';
+      logoutBtn.style.display = 'none';
+      loginLink.style.display = 'inline-block';
+    }
+  }
+
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    const { error } = await supabaseClient.auth.signOut();
+    if (error) {
+      alert('Error logging out: ' + error.message);
+    } else {
+      updateUserInfo();
+      // Optional: redirect after logout
+      // window.location.href = 'login.html';
+    }
+  });
+
+  // Run on page load
+  updateUserInfo();
+</script>
+
 </body>
 </html>
