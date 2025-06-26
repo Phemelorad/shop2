@@ -103,15 +103,27 @@ const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
 
   async function submitApplication(event) {
-    event.preventDefault();
+  event.preventDefault();
 
-    const fileInput = document.getElementById("id");
-    const file = fileInput.files[0];
-    if (!file) {
-      alert("Please upload an ID file.");
-      return;
-    }
-    const filename = `public/${Date.now()}_${file.name}`; 
+  // Add user check here:
+  const {
+    data: { user },
+    error: userError
+  } = await supabaseClient.auth.getUser();
+
+  if (userError || !user) {
+    alert("❌ You must be logged in to submit an application.");
+    return;  // Stop the function here if not logged in
+  }
+
+  const fileInput = document.getElementById("id");
+  const file = fileInput.files[0];
+  if (!file) {
+    alert("Please upload an ID file.");
+    return;
+  }
+
+  const filename = `public/${Date.now()}_${file.name}`;
 
 
     const { data: uploadData, error: uploadError } = await supabaseClient
