@@ -5,6 +5,16 @@
     <link rel="stylesheet" href="header.css">
     <link rel="stylesheet" href="navigation.css">
     <link rel="stylesheet" href="table.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+<script>
+  const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
+  const supabaseKey = 'your-public-key-here'; // Use anon/public key
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+</script>
+<style>.approved { color: green; font-weight: bold; }
+.denied { color: red; font-weight: bold; }
+.pending { color: orange; font-weight: bold; }
+</style>
     
 
 </head>
@@ -32,34 +42,68 @@
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <td>Jane Doe</td>
-      <td>P5,000</td>
-      <td>15%</td>
-      <td>P5,750</td>
-      <td>1 month</td>
-      <td class="approved">Approved</td>
-    </tr>
-    <tr>
-      <td>John Smith</td>
-      <td>P2,500</td>
-      <td>15%</td>
-      <td>P5,750</td>
-      <td>1 month</td>
-      <td class="denied">denied</td>
-
-    </tr>
-    <tr>
-      <td>John Smith</td>
-      <td>P2,500</td>
-      <td>15%</td>
-      <td>P5,750</td>
-      <td>1 month</td>
-      <td class="pending">pending</td>
-
-    </tr>
+    
   </tbody>
 </table>
+<script>
+  async function fetchLoanStatus() {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (!user) {
+      alert("You must be logged in to view your loan status.");
+      window.location.href = 'login.html';
+      return;
+    }
+
+    // Step 1: Find the applicant_id based on email
+    const { data: applicantData, error: applicantError } = await supabase
+      .from("applicants")
+      .select("applicant_id, name")
+      .eq("email", user.email)
+      .single();
+
+    if (applicantError || !applicantData) {
+      alert("Applicant not found.");
+      return;
+    }
+
+    const applicantId = applicantData.applicant_id;
+
+    // Step 2: Get loan applications for the applicant
+    const { data: loans, error: loanError } = await supabase
+      .from("loan_applications")
+      .select("*")
+      .eq("applicant_id", applicantId);
+
+    if (loanError) {
+      alert("Failed to fetch loan data.");
+      return;
+    }
+
+    // Step 3: Inject rows into the table
+    const tbody = document.getElementById("status-body");
+    tbody.innerHTML = "";
+
+    loans.forEach(loan => {
+      const interestRate = 0.15;
+      const interest = loan.loan_amount * interestRate;
+      const total = loan.loan_amount + interest;
+
+      const row = `
+        <tr>
+          <td>${applicantData.name}</td>
+          <td>P${loan.loan_amount}</td>
+          <td>15%</td>
+          <td>P${total}</td>
+          <td>${loan.repayment_months} month(s)</td>
+          <td class="${loan.status?.toLowerCase() || 'pending'}">${loan.status || 'Pending'}</td>
+        </tr>
+      `;
+      tbody.innerHTML += row;
+    });
+  }
+
+  fetchLoanStatus();
+</script>
 
     
 </body>
