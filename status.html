@@ -35,16 +35,17 @@
     <tr>
       <th>Name</th>
       <th>Loan Amount</th>
-      <th>loan interest</th>
-      <th>total owed</th>
-      <th>duration</th>
+      <th>Loan Interest</th>
+      <th>Total Owed</th>
+      <th>Duration</th>
       <th>Status</th>
     </tr>
   </thead>
-  <tbody>
-    
+  <tbody id="status-body">
+    <!-- Loan rows will load here -->
   </tbody>
 </table>
+
 <script>
   async function fetchLoanStatus() {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
