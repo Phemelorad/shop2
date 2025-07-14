@@ -2,17 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Loan Status</title> 
+  <title>Loan Status</title>
   <link rel="stylesheet" href="header.css" />
   <link rel="stylesheet" href="navigation.css" />
   <link rel="stylesheet" href="table.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    /* Optional: styling for status colors */
-    .approved { color: green; font-weight: bold; }
-    .pending { color: orange; font-weight: bold; }
-    .denied { color: red; font-weight: bold; }
-  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 <header class="txt">
@@ -27,79 +21,70 @@
   </section>
 </header>
 
-<table border="1" id="loan-table">
+
+<table border="1" id="loan-status-table">
   <thead>
     <tr>
       <th>Name</th>
-      <th>Loan Amount</th>
-      <th>Loan Interest</th>
-      <th>Total Owed</th>
-      <th>Duration</th>
+      <th>Loan Amount (P)</th>
+      <th>Interest Rate (%)</th>
+      <th>Total Owed (P)</th>
+      <th>Duration (Months)</th>
       <th>Status</th>
     </tr>
   </thead>
   <tbody>
-    <!-- Dynamic rows will be inserted here -->
+    <!-- Rows will be added here dynamically -->
   </tbody>
 </table>
 
 <script>
-  // Initialize Supabase client with your keys
-  const supabase = supabasejs.createClient(
-    'https://cgitlcuheoncjmxxcipq.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE'
-  );
+  const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE'; // Replace with your anon key
+  const { createClient } = supabase;
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
-  async function loadLoanStatuses() {
-    // Join loan_applications with applicants to get name + loan info
+  async function loadLoanStatus() {
+    // Fetch loan data joined with applicants
     const { data, error } = await supabase
       .from('loan_applications')
       .select(`
-        loan_amount, repayment_months, status,
-        applicants(name, surname)
+        loan_id,
+        loan_amount,
+        interest_rate,
+        repayment_months,
+        status,
+        applicants ( name, surname )
       `);
 
     if (error) {
-      alert("Error loading loan statuses: " + error.message);
+      console.error('Error loading loan status:', error);
       return;
     }
 
-    const tbody = document.querySelector("#loan-table tbody");
-    tbody.innerHTML = ""; // Clear previous rows
-
-    const interestRate = 0.15; // 15% fixed interest as example
+    const tbody = document.querySelector('#loan-status-table tbody');
+    tbody.innerHTML = ''; // Clear previous rows
 
     data.forEach(loan => {
-      const fullName = `${loan.applicants.name} ${loan.applicants.surname}`;
-      const loanAmount = loan.loan_amount;
-      const interest = loanAmount * interestRate;
-      const totalOwed = loanAmount + interest;
-      const duration = loan.repayment_months + (loan.repayment_months === 1 ? " month" : " months");
-      const status = loan.status || "Pending";
+      const totalOwed = (loan.loan_amount * (1 + (loan.interest_rate / 100))).toFixed(2);
 
-      // Status class for styling
-      let statusClass = "";
-      if (status.toLowerCase() === "approved") statusClass = "approved";
-      else if (status.toLowerCase() === "pending") statusClass = "pending";
-      else if (status.toLowerCase() === "denied") statusClass = "denied";
+      const row = document.createElement('tr');
 
-      const row = `
-        <tr>
-          <td>${fullName}</td>
-          <td>P${loanAmount.toLocaleString()}</td>
-          <td>${(interestRate * 100).toFixed(0)}%</td>
-          <td>P${totalOwed.toLocaleString()}</td>
-          <td>${duration}</td>
-          <td class="${statusClass}">${status.charAt(0).toUpperCase() + status.slice(1)}</td>
-        </tr>
+      row.innerHTML = `
+        <td>${loan.applicants?.name ?? 'N/A'} ${loan.applicants?.surname ?? ''}</td>
+        <td>P${loan.loan_amount.toLocaleString()}</td>
+        <td>${loan.interest_rate.toFixed(2)}%</td>
+        <td>P${parseFloat(totalOwed).toLocaleString()}</td>
+        <td>${loan.repayment_months}</td>
+        <td class="${loan.status.toLowerCase()}">${loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}</td>
       `;
 
-      tbody.insertAdjacentHTML("beforeend", row);
+      tbody.appendChild(row);
     });
   }
 
-  // Load data on page load
-  loadLoanStatuses();
+  // Load the data when the page loads
+  window.onload = loadLoanStatus;
 </script>
 </body>
 </html>
