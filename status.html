@@ -1,21 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title >loan status</title> 
-    <link rel="stylesheet" href="header.css">
-    <link rel="stylesheet" href="navigation.css">
-    <link rel="stylesheet" href="table.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
-<script>
-  const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE'; // Use anon/public key
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-</script>
-<style>.approved { color: green; font-weight: bold; }
-.denied { color: red; font-weight: bold; }
-.pending { color: orange; font-weight: bold; }
-</style>
-    
+  <meta charset="UTF-8">
+  <title>Loan Status</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <link rel="stylesheet" href="header.css">
+  <link rel="stylesheet" href="navigation.css">
+  <link rel="stylesheet" href="table.css">
 
 </head>
 <header class="txt">
@@ -30,82 +21,74 @@
     </section>
 </header>
 <body>
-    <table border="1">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Loan Amount</th>
-      <th>Loan Interest</th>
-      <th>Total Owed</th>
-      <th>Duration</th>
-      <th>Status</th>
-    </tr>
-  </thead>
-  <tbody id="status-body">
-    <!-- Loan rows will load here -->
-  </tbody>
-</table>
 
-<script>
-  async function fetchLoanStatus() {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (!user) {
-      alert("You must be logged in to view your loan status.");
-      window.location.href = 'login.html';
-      return;
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Loan Amount</th>
+        <th>Loan Interest</th>
+        <th>Total Owed</th>
+        <th>Duration</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="loanData">
+      <!-- Dynamic content inserted here -->
+    </tbody>
+  </table>
+
+  <script>
+    // ✅ Supabase connection
+    const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE';
+    const supabase = supabasejs.createClient(supabaseUrl, supabaseKey);
+
+    async function fetchLoanStatus() {
+      const { data, error } = await supabase
+        .from('loan_applications')
+        .select(`
+          loan_amount,
+          repayment_months,
+          status,
+          applicants (
+            name,
+            surname
+          )
+        `);
+
+      if (error) {
+        console.error('Error fetching data:', error);
+        return;
+      }
+
+      const tableBody = document.getElementById('loanData');
+      tableBody.innerHTML = '';
+
+      data.forEach(entry => {
+        const fullName = `${entry.applicants.name} ${entry.applicants.surname}`;
+        const amount = `P${entry.loan_amount.toLocaleString()}`;
+        const interestRate = 0.15;
+        const totalOwed = `P${(entry.loan_amount * (1 + interestRate)).toFixed(2)}`;
+        const duration = `${entry.repayment_months} month(s)`;
+        const statusText = entry.status || 'Pending';
+        const statusClass = statusText.toLowerCase();
+
+        const row = `
+          <tr>
+            <td>${fullName}</td>
+            <td>${amount}</td>
+            <td>15%</td>
+            <td>${totalOwed}</td>
+            <td>${duration}</td>
+            <td class="${statusClass}">${statusText}</td>
+          </tr>
+        `;
+        tableBody.insertAdjacentHTML('beforeend', row);
+      });
     }
 
-    // Step 1: Find the applicant_id based on email
-    const { data: applicantData, error: applicantError } = await supabase
-      .from("applicants")
-      .select("applicant_id, name")
-      .eq("email", user.email)
-      .single();
-
-    if (applicantError || !applicantData) {
-      alert("Applicant not found.");
-      return;
-    }
-
-    const applicantId = applicantData.applicant_id;
-
-    // Step 2: Get loan applications for the applicant
-    const { data: loans, error: loanError } = await supabase
-      .from("loan_applications")
-      .select("*")
-      .eq("applicant_id", applicantId);
-
-    if (loanError) {
-      alert("Failed to fetch loan data.");
-      return;
-    }
-
-    // Step 3: Inject rows into the table
-    const tbody = document.getElementById("status-body");
-    tbody.innerHTML = "";
-
-    loans.forEach(loan => {
-      const interestRate = 0.15;
-      const interest = loan.loan_amount * interestRate;
-      const total = loan.loan_amount + interest;
-
-      const row = `
-        <tr>
-          <td>${applicantData.name}</td>
-          <td>P${loan.loan_amount}</td>
-          <td>15%</td>
-          <td>P${total}</td>
-          <td>${loan.repayment_months} month(s)</td>
-          <td class="${loan.status?.toLowerCase() || 'pending'}">${loan.status || 'Pending'}</td>
-        </tr>
-      `;
-      tbody.innerHTML += row;
-    });
-  }
-
-  fetchLoanStatus();
-</script>
-
-    
+    document.addEventListener('DOMContentLoaded', fetchLoanStatus);
+  </script>
 </body>
 </html>
