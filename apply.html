@@ -85,67 +85,118 @@
     <button type="submit">Submit Application</button>
   </form>
 
-  <script>
-    const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE';
+  <!-- Replace your <script> block for submitApplication with this updated version -->
+<script>
+  const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE';
 
-    const { createClient } = supabase;
-    const supabaseClient = createClient(supabaseUrl, supabaseKey);
+  const { createClient } = supabase;
+  const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
-    async function submitApplication(event) {
-      event.preventDefault();
+  async function submitApplication(event) {
+    event.preventDefault();
 
+    // Gather data
+    const applicant = {
+      name: document.getElementById("name").value,
+      surname: document.getElementById("surname").value,
+      dob: document.getElementById("date").value,
+      gender: document.getElementById("gender").value,
+      id_number: document.getElementById("omang").value,
+      phone1: document.getElementById("phone1").value,
+      phone2: document.getElementById("phone2").value,
+      email: document.getElementById("email").value,
+      address: document.getElementById("address").value,
+    };
 
-      const applicant = {
-        name: document.getElementById("name").value,
-        surname: document.getElementById("surname").value,
-        dob: document.getElementById("date").value,
-        gender: document.getElementById("gender").value,
-        id_number: document.getElementById("omang").value,
-        phone1: document.getElementById("phone1").value,
-        phone2: document.getElementById("phone2").value,
-        email: document.getElementById("email").value,
-        address: document.getElementById("address").value,
-      };
+    const employment = {
+      status: document.getElementById("es").value,
+      occupation: document.getElementById("occupation").value,
+      work_phone: document.getElementById("work").value,
+    };
 
-      const employment = {
-        status: document.getElementById("es").value,
-        occupation: document.getElementById("occupation").value,
-        work_phone: document.getElementById("work").value,
-      };
+    const loan_amount = parseFloat(document.getElementById("amount").value);
+    const repayment_months = parseInt(document.getElementById("repayment").value);
+    const bank_account = document.getElementById("bad").value;
 
-      const loan = {
-        loan_amount: parseFloat(document.getElementById("amount").value),
-        repayment_months: parseInt(document.getElementById("repayment").value),
-        bank_account: document.getElementById("bad").value,
-      };
-
-      const guarantor = {
-        name: document.getElementById("gname").value,
-        surname: document.getElementById("gsurname").value,
-        phone: document.getElementById("gphone").value,
-      };
-
-      const { data: applicantData, error: applicantError } = await supabaseClient
-        .from("applicants")
-        .insert([applicant])
-        .select();
-
-      if (applicantError) {
-        alert("❌ Failed to save applicant: " + applicantError.message);
-        return;
-      }
-
-      const applicant_id = applicantData[0].applicant_id;
-
-      await supabaseClient.from("employment").insert([{ applicant_id, ...employment }]);
-      await supabaseClient.from("loan_applications").insert([{ applicant_id, ...loan }]);
-      await supabaseClient.from("guarantors").insert([{ applicant_id, ...guarantor }]);
-
-      alert("✅ Loan application submitted successfully!");
-      document.querySelector("form").reset();
+    // ✅ Validate loan inputs
+    if (isNaN(loan_amount) || loan_amount <= 0) {
+      alert("Please enter a valid loan amount greater than 0.");
+      return;
     }
-  </script>
+    if (isNaN(repayment_months) || repayment_months < 1 || repayment_months > 12) {
+      alert("Please select a valid repayment period (1–12 months).");
+      return;
+    }
+
+    const loan = {
+      loan_amount,
+      repayment_months,
+      bank_account,
+      status: 'pending' // explicitly set to match DB check constraint
+    };
+
+    const guarantor = {
+      name: document.getElementById("gname").value,
+      surname: document.getElementById("gsurname").value,
+      phone: document.getElementById("gphone").value,
+    };
+
+    // ✅ Insert applicant
+    const { data: applicantData, error: applicantError } = await supabaseClient
+      .from("applicants")
+      .insert([applicant])
+      .select();
+
+    if (applicantError) {
+      alert("❌ Failed to save applicant: " + applicantError.message);
+      console.error("Applicant error:", applicantError);
+      return;
+    }
+
+    const applicant_id = applicantData[0].applicant_id;
+
+    // ✅ Insert employment
+    const { error: empError } = await supabaseClient
+      .from("employment")
+      .insert([{ applicant_id, ...employment }]);
+    if (empError) {
+      alert("❌ Failed to save employment details: " + empError.message);
+      console.error("Employment error:", empError);
+      return;
+    }
+
+    // ✅ Insert loan application
+    const { error: loanError, data: loanData } = await supabaseClient
+      .from("loan_applications")
+      .insert([{ applicant_id, ...loan }])
+      .select();
+
+    if (loanError) {
+      alert("❌ Failed to save loan: " + loanError.message);
+      console.error("Loan insert error:", loanError);
+      return;
+    } else {
+      console.log("✅ Loan saved:", loanData);
+    }
+
+    // ✅ Insert guarantor
+    const { error: gError } = await supabaseClient
+      .from("guarantors")
+      .insert([{ applicant_id, ...guarantor }]);
+
+    if (gError) {
+      alert("❌ Failed to save guarantor: " + gError.message);
+      console.error("Guarantor error:", gError);
+      return;
+    }
+
+    // ✅ All successful
+    alert("✅ Loan application submitted successfully!");
+    document.querySelector("form").reset();
+  }
+</script>
+
 
   
 <script>
