@@ -25,94 +25,92 @@
     </div>
   </header>
 
-  <h2>My Loan Applications</h2>
-  <table>
+  <h2>Your Loan Applications</h2>
+  <table border="1" id="loan-table">
     <thead>
       <tr>
-        <th>Name</th>
         <th>Loan Amount</th>
-        <th>Loan Interest</th>
+        <th>Interest (%)</th>
         <th>Total Owed</th>
-        <th>Duration</th>
+        <th>Repayment Duration</th>
         <th>Status</th>
+        <th>Submitted At</th>
       </tr>
     </thead>
-    <tbody id="loanData">
-      <!-- Dynamic content inserted here -->
-    </tbody>
+    <tbody></tbody>
   </table>
 
   <script>
     const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE'; // Use your full key
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE'; // 🔒 Your actual full key
+    const client = supabase.createClient(supabaseUrl, supabaseKey);
 
-    async function fetchUserLoanStatus() {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+    async function loadLoanStatus() {
+      const { data: { user }, error } = await client.auth.getUser();
+      const emailSpan = document.getElementById("user-email");
+      const logoutBtn = document.getElementById("logout-btn");
 
-      const userEmailSpan = document.getElementById('user-email');
-      const logoutBtn = document.getElementById('logout-btn');
-
-      if (userError || !user) {
-        window.location.href = 'login.html'; // redirect if not logged in
+      if (error || !user) {
+        alert("Please log in to view your loan status.");
+        window.location.href = "login.html";
         return;
       }
 
-      userEmailSpan.textContent = `Logged in as: ${user.email}`;
-      logoutBtn.style.display = 'inline-block';
+      emailSpan.textContent = `Logged in as: ${user.email}`;
+      logoutBtn.style.display = "inline-block";
 
-      // Get applicant_id for logged-in user
-      const { data: applicants, error: applicantError } = await supabase
-        .from('applicants')
-        .select('applicant_id, name, surname')
-        .eq('email', user.email);
+      // Find applicant_id linked to user
+      const { data: applicants, error: applicantError } = await client
+        .from("applicants")
+        .select("applicant_id")
+        .eq("email", user.email);
 
-      if (applicantError || applicants.length === 0) {
-        alert('No applicant record found for this user.');
+      if (applicantError || !applicants || applicants.length === 0) {
+        alert("No applicant record found for this account.");
         return;
       }
 
-      const applicant = applicants[0];
+      const applicant_id = applicants[0].applicant_id;
 
-      // Get loan applications for that applicant
-      const { data: loans, error: loanError } = await supabase
-        .from('loan_applications')
-        .select('*')
-        .eq('applicant_id', applicant.applicant_id);
+      // Get loans for this applicant
+      const { data: loans, error: loanError } = await client
+        .from("loan_applications")
+        .select("*")
+        .eq("applicant_id", applicant_id);
 
       if (loanError) {
-        alert('Error loading loan applications: ' + loanError.message);
+        alert("Error fetching loan data.");
         return;
       }
 
-      const tableBody = document.getElementById('loanData');
-      tableBody.innerHTML = '';
+      const tbody = document.querySelector("#loan-table tbody");
+      tbody.innerHTML = "";
 
       loans.forEach(loan => {
-        const interestRate = 0.15;
-        const totalOwed = (loan.loan_amount * (1 + interestRate)).toFixed(2);
+        const interest = parseFloat(loan.interest_rate || 15);
+        const total = (parseFloat(loan.loan_amount) * (1 + interest / 100)).toFixed(2);
+
         const row = `
           <tr>
-            <td>${applicant.name} ${applicant.surname}</td>
-            <td>P${loan.loan_amount.toLocaleString()}</td>
-            <td>15%</td>
-            <td>P${totalOwed}</td>
+            <td>P${loan.loan_amount.toFixed(2)}</td>
+            <td>${interest}%</td>
+            <td>P${total}</td>
             <td>${loan.repayment_months} month(s)</td>
-            <td class="${loan.status.toLowerCase()}">${loan.status}</td>
+            <td>${loan.status}</td>
+            <td>${new Date(loan.submitted_at).toLocaleString()}</td>
           </tr>
         `;
-        tableBody.insertAdjacentHTML('beforeend', row);
+        tbody.insertAdjacentHTML("beforeend", row);
       });
     }
 
-    // Logout button
-    document.getElementById('logout-btn').addEventListener('click', async () => {
-      await supabase.auth.signOut();
-      window.location.href = 'login.html';
+    document.getElementById("logout-btn").addEventListener("click", async () => {
+      await client.auth.signOut();
+      window.location.href = "login.html";
     });
 
-    // Run on page load
-    document.addEventListener('DOMContentLoaded', fetchUserLoanStatus);
+    // 🔄 Load data on page load
+    loadLoanStatus();
   </script>
 </body>
 </html>
