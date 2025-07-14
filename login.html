@@ -9,7 +9,8 @@
         Username: <input type="text" id="username" required><br><br>
         Password: <input type="password" id="password" required><br><br>
         <input type="submit" value="Login">
-    </form>
+     <button class="sty" type="button" onclick="goToRegister()">Register Instead</button>
+  </form>
 
     <p>Don't have an account? <a href="index.html">Register here</a></p>
 
@@ -46,5 +47,10 @@
         }
       }
     </script>
+     <script>
+    function goToRegister() {
+      window.location.href = "Index - Copy.html"; // Change to your actual registration page URL
+    }
+  </script>
 </body>
 </html>
