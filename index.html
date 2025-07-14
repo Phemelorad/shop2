@@ -1,19 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Register</title>
+    <title >Register</title>
+    
     <link rel="stylesheet" href="MAIN.css">
+   
 </head>
+<header class="txt">
+    <h1>RADIPODI MICRO LOANS</h1>
+    <h4>"Funding Tomorrow, Today."</h4>
+    
+</header>
 <body>
-    <h2>Register</h2>
+    
+    <section>
     <form onsubmit="handleRegister(event)">
+        <h2>Register</h2>
         Username: <input type="text" id="username" required><br><br>
         Password: <input type="password" id="password" required><br><br>
         Email: <input type="email" id="email" required><br><br>
         <input type="submit" value="Register">
+        
     </form>
+    </section>
 
-    <p>Already have an account? <a href="login.html">Login here</a></p>
+    <p class="ttt">Already have an account? <a href="login.html">Login here</a></p>
 
     <!-- Load Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
