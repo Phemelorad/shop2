@@ -6,9 +6,8 @@
   <link rel="stylesheet" href="form.css" />
   <link rel="stylesheet" href="navigation.css" />
   <link rel="stylesheet" href="header.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
 </head>
-<body>
 <header class="txt">
   <h1>RADIPODI MICRO LOANS</h1>
   <h4>"Funding Tomorrow, Today."</h4>
@@ -20,156 +19,148 @@
     </div>
   </section>
   <div id="user-info" style="font-family: Arial, sans-serif; padding: 10px; background: #eee; display: flex; align-items: center; gap: 15px;">
-    <span id="user-email" style="font-weight: bold;"></span>
-    <button id="logout-btn" style="display:none; padding: 5px 10px; cursor: pointer;">Logout</button>
-    <a href="login.html" id="login-link" style="text-decoration: none; color: blue;">Login</a>
-  </div>
+  <span id="user-email" style="font-weight: bold;"></span>
+  <button id="logout-btn" style="display:none; padding: 5px 10px; cursor: pointer;">Logout</button>
+  <a href="login.html" id="login-link" style="text-decoration: none; color: blue;">Login</a>
+</div>
+
 </header>
+<body>
+  <form class="frm" onsubmit="submitApplication(event)">
+    <h2 class="txt">Basic Personal Information</h2>
+    <p>
+      Name: <input type="text" id="name" placeholder="John/Jane" required /><br />
+      Surname: <input type="text" id="surname" placeholder="Doe" required /><br />
+      D.O.B: <input type="date" id="date" required /><br />
+      Gender:
+      <select id="gender" name="gender" required>
+        <option value="">-- Select gender --</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="other">Other</option>
+      </select>
+    </p>
+    <p>
+      ID/Passport No: <input type="text" id="omang" placeholder="012345678" required /><br />
+      Phone No: <input type="text" id="phone1" placeholder="+267 71234567" required /><br />
+      Phone No 2: <input type="text" id="phone2" placeholder="+267 71234567" />
+    </p>
+    <p>
+      Email: <input type="email" id="email" required placeholder="johndoe@yahoo.com" /><br />
+      Residential Address: <input type="text" id="address" required />
+    </p>
+    <h2 class="txt">Employment & Income Details</h2>
+    <p>
+      Employment Status:
+      <select id="es" name="es" required>
+        <option value="">-- Select status --</option>
+        <option value="employed">Employed</option>
+        <option value="self">Self-Employed</option>
+        <option value="unemployed">Unemployed</option>
+      </select><br />
+      Occupation: <input type="text" id="occupation" placeholder="e.g., Teacher" required /><br />
+      Work Cell: <input type="text" id="work" placeholder="+267 71234567" required />
+    </p>
+    <h2 class="txt">Loan-Specific Information</h2>
+    <p>
+      Loan Amount Requested (P): <input type="number" id="amount" required /><br />
+      Preferred Repayment Period:
+      <select id="repayment" name="repayment" required>
+        <option value="">-- Select period --</option>
+        <option value="1">1 month</option>
+        <option value="2">2 months</option>
+        <option value="3">3 months</option>
+      </select>
+    </p>
+    <h2 class="txt">Banking Information</h2>
+    <p>
+      Bank Account Details: <input type="text" id="bad" required />
+    </p>
+    <h2 class="txt">References or Guarantors</h2>
+    <p>
+      Name: <input type="text" id="gname" placeholder="John/Jane" required /><br />
+      Surname: <input type="text" id="gsurname" placeholder="Doe" required /><br />
+      Contact Info: <input type="text" id="gphone" placeholder="+267 71234567" required />
+    </p>
+    <button type="submit">Submit Application</button>
+  </form>
 
-<form class="frm" onsubmit="submitApplication(event)">
-  <h2 class="txt">Basic Personal Information</h2>
-  <p>
-    Name: <input type="text" id="name" required /><br />
-    Surname: <input type="text" id="surname" required /><br />
-    D.O.B: <input type="date" id="date" required /><br />
-    Gender:
-    <select id="gender" required>
-      <option value="">-- Select gender --</option>
-      <option value="male">Male</option>
-      <option value="female">Female</option>
-      <option value="other">Other</option>
-    </select>
-  </p>
-  <p>
-    ID/Passport No: <input type="text" id="omang" required /><br />
-    Phone No: <input type="text" id="phone1" required /><br />
-    Phone No 2: <input type="text" id="phone2" />
-  </p>
-  <p>
-    Email: <input type="email" id="email" required /><br />
-    Residential Address: <input type="text" id="address" required />
-  </p>
+  <script>
+    const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE';
 
-  <h2 class="txt">Employment & Income Details</h2>
-  <p>
-    Employment Status:
-    <select id="es" required>
-      <option value="">-- Select status --</option>
-      <option value="employed">Employed</option>
-      <option value="self">Self-Employed</option>
-      <option value="unemployed">Unemployed</option>
-    </select><br />
-    Occupation: <input type="text" id="occupation" required /><br />
-    Work Cell: <input type="text" id="work" required />
-  </p>
+    const { createClient } = supabase;
+    const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
-  <h2 class="txt">Loan-Specific Information</h2>
-  <p>
-    Loan Amount Requested (P): <input type="number" id="amount" required /><br />
-    Preferred Repayment Period:
-    <select id="repayment" required>
-      <option value="">-- Select period --</option>
-      <option value="1">1 month</option>
-      <option value="2">2 months</option>
-      <option value="3">3 months</option>
-    </select>
-  </p>
+    async function submitApplication(event) {
+      event.preventDefault();
 
-  <h2 class="txt">Banking Information</h2>
-  <p>
-    Bank Account Details: <input type="text" id="bad" required />
-  </p>
 
-  <h2 class="txt">References or Guarantors</h2>
-  <p>
-    Name: <input type="text" id="gname" required /><br />
-    Surname: <input type="text" id="gsurname" required /><br />
-    Contact Info: <input type="text" id="gphone" required />
-  </p>
+      const applicant = {
+        name: document.getElementById("name").value,
+        surname: document.getElementById("surname").value,
+        dob: document.getElementById("date").value,
+        gender: document.getElementById("gender").value,
+        id_number: document.getElementById("omang").value,
+        phone1: document.getElementById("phone1").value,
+        phone2: document.getElementById("phone2").value,
+        email: document.getElementById("email").value,
+        address: document.getElementById("address").value,
+      };
 
-  <button type="submit">Submit Application</button>
-</form>
+      const employment = {
+        status: document.getElementById("es").value,
+        occupation: document.getElementById("occupation").value,
+        work_phone: document.getElementById("work").value,
+      };
 
+      const loan = {
+        loan_amount: parseFloat(document.getElementById("amount").value),
+        repayment_months: parseInt(document.getElementById("repayment").value),
+        bank_account: document.getElementById("bad").value,
+      };
+
+      const guarantor = {
+        name: document.getElementById("gname").value,
+        surname: document.getElementById("gsurname").value,
+        phone: document.getElementById("gphone").value,
+      };
+
+      const { data: applicantData, error: applicantError } = await supabaseClient
+        .from("applicants")
+        .insert([applicant])
+        .select();
+
+      if (applicantError) {
+        alert("❌ Failed to save applicant: " + applicantError.message);
+        return;
+      }
+
+      const applicant_id = applicantData[0].applicant_id;
+
+      await supabaseClient.from("employment").insert([{ applicant_id, ...employment }]);
+      await supabaseClient.from("loan_applications").insert([{ applicant_id, ...loan }]);
+      await supabaseClient.from("guarantors").insert([{ applicant_id, ...guarantor }]);
+
+      alert("✅ Loan application submitted successfully!");
+      document.querySelector("form").reset();
+    }
+  </script>
+
+  
 <script>
-  const supabase = supabasejs.createClient(
-    'https://cgitlcuheoncjmxxcipq.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE'
-  );
+ 
 
-  async function submitApplication(event) {
-    event.preventDefault();
-
-    const applicant = {
-      name: document.getElementById("name").value,
-      surname: document.getElementById("surname").value,
-      dob: document.getElementById("date").value,
-      gender: document.getElementById("gender").value,
-      id_number: document.getElementById("omang").value,
-      phone1: document.getElementById("phone1").value,
-      phone2: document.getElementById("phone2").value,
-      email: document.getElementById("email").value,
-      address: document.getElementById("address").value
-    };
-
-    const employment = {
-      status: document.getElementById("es").value,
-      occupation: document.getElementById("occupation").value,
-      work_phone: document.getElementById("work").value
-    };
-
-    const loan = {
-      loan_amount: parseFloat(document.getElementById("amount").value),
-      repayment_months: parseInt(document.getElementById("repayment").value),
-      bank_account: document.getElementById("bad").value,
-      status: "Pending" // ✅ Added default status here
-    };
-
-    const guarantor = {
-      name: document.getElementById("gname").value,
-      surname: document.getElementById("gsurname").value,
-      phone: document.getElementById("gphone").value
-    };
-
-    // Save to applicants table
-    const { data: applicantData, error: applicantError } = await supabase
-      .from("applicants")
-      .insert([applicant])
-      .select();
-
-    if (applicantError) {
-      alert("❌ Failed to save applicant: " + applicantError.message);
-      return;
-    }
-
-    const applicant_id = applicantData[0].applicant_id;
-
-    // Insert employment
-    await supabase.from("employment").insert([{ applicant_id, ...employment }]);
-
-    // Insert loan application (✅ now includes status)
-    const { error: loanError } = await supabase
-      .from("loan_applications")
-      .insert([{ applicant_id, ...loan }]);
-    if (loanError) {
-      alert("❌ Loan not saved: " + loanError.message);
-      return;
-    }
-
-    // Insert guarantor
-    await supabase.from("guarantors").insert([{ applicant_id, ...guarantor }]);
-
-    alert("✅ Loan application submitted successfully!");
-    document.querySelector("form").reset();
-  }
-
-  // Handle session display
   async function updateUserInfo() {
-    const { data, error } = await supabase.auth.getUser();
-    const user = data?.user;
+    const { data: { user }, error } = await supabaseClient.auth.getUser();
 
     const userEmailSpan = document.getElementById('user-email');
     const logoutBtn = document.getElementById('logout-btn');
     const loginLink = document.getElementById('login-link');
+
+    if (error) {
+      console.error('Error getting user:', error);
+    }
 
     if (user) {
       userEmailSpan.textContent = `Logged in as: ${user.email}`;
@@ -183,11 +174,17 @@
   }
 
   document.getElementById('logout-btn').addEventListener('click', async () => {
-    await supabase.auth.signOut();
-    updateUserInfo();
-    window.location.href = 'login.html';
+    const { error } = await supabaseClient.auth.signOut();
+    if (error) {
+      alert('Error logging out: ' + error.message);
+    } else {
+      updateUserInfo();
+      // Optional: redirect after logout
+       window.location.href = 'login.html';
+    }
   });
 
+  // Run on page load
   updateUserInfo();
 </script>
 
