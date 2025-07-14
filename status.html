@@ -1,94 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Loan Status</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <link rel="stylesheet" href="header.css">
-  <link rel="stylesheet" href="navigation.css">
-  <link rel="stylesheet" href="table.css">
-
+  <meta charset="UTF-8" />
+  <title>Loan Status</title> 
+  <link rel="stylesheet" href="header.css" />
+  <link rel="stylesheet" href="navigation.css" />
+  <link rel="stylesheet" href="table.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    /* Optional: styling for status colors */
+    .approved { color: green; font-weight: bold; }
+    .pending { color: orange; font-weight: bold; }
+    .denied { color: red; font-weight: bold; }
+  </style>
 </head>
-<header class="txt">
-    <h1>RADIPODI MICRO LOANS</h1>
-    <h4>"Funding Tomorrow, Today."</h4>
-    <section>
-       <div class="nav">
-         <button onclick="location.href='apply.html'">Apply Now</button>
-         <button onclick="location.href='status.html'">Check Loan Status</button>
-         <button onclick="location.href='repay.html'">Repay</button>
-      </div>
-    </section>
-</header>
 <body>
+<header class="txt">
+  <h1>RADIPODI MICRO LOANS</h1>
+  <h4>"Funding Tomorrow, Today."</h4>
+  <section>
+    <div class="nav">
+      <button onclick="location.href='apply.html'">Apply Now</button>
+      <button onclick="location.href='status.html'">Check Loan Status</button>
+      <button onclick="location.href='repay.html'">Repay</button>
+    </div>
+  </section>
+</header>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Loan Amount</th>
-        <th>Loan Interest</th>
-        <th>Total Owed</th>
-        <th>Duration</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody id="loanData">
-      <!-- Dynamic content inserted here -->
-    </tbody>
-  </table>
+<table border="1" id="loan-table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Loan Amount</th>
+      <th>Loan Interest</th>
+      <th>Total Owed</th>
+      <th>Duration</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Dynamic rows will be inserted here -->
+  </tbody>
+</table>
 
-  <script>
-    // ✅ Supabase connection
-    const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE';
-    const supabase = supabasejs.createClient(supabaseUrl, supabaseKey);
+<script>
+  // Initialize Supabase client with your keys
+  const supabase = supabasejs.createClient(
+    'https://cgitlcuheoncjmxxcipq.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE'
+  );
 
-    async function fetchLoanStatus() {
-      const { data, error } = await supabase
-        .from('loan_applications')
-        .select(`
-          loan_amount,
-          repayment_months,
-          status,
-          applicants (
-            name,
-            surname
-          )
-        `);
+  async function loadLoanStatuses() {
+    // Join loan_applications with applicants to get name + loan info
+    const { data, error } = await supabase
+      .from('loan_applications')
+      .select(`
+        loan_amount, repayment_months, status,
+        applicants(name, surname)
+      `);
 
-      if (error) {
-        console.error('Error fetching data:', error);
-        return;
-      }
-
-      const tableBody = document.getElementById('loanData');
-      tableBody.innerHTML = '';
-
-      data.forEach(entry => {
-        const fullName = `${entry.applicants.name} ${entry.applicants.surname}`;
-        const amount = `P${entry.loan_amount.toLocaleString()}`;
-        const interestRate = 0.15;
-        const totalOwed = `P${(entry.loan_amount * (1 + interestRate)).toFixed(2)}`;
-        const duration = `${entry.repayment_months} month(s)`;
-        const statusText = entry.status || 'Pending';
-        const statusClass = statusText.toLowerCase();
-
-        const row = `
-          <tr>
-            <td>${fullName}</td>
-            <td>${amount}</td>
-            <td>15%</td>
-            <td>${totalOwed}</td>
-            <td>${duration}</td>
-            <td class="${statusClass}">${statusText}</td>
-          </tr>
-        `;
-        tableBody.insertAdjacentHTML('beforeend', row);
-      });
+    if (error) {
+      alert("Error loading loan statuses: " + error.message);
+      return;
     }
 
-    document.addEventListener('DOMContentLoaded', fetchLoanStatus);
-  </script>
+    const tbody = document.querySelector("#loan-table tbody");
+    tbody.innerHTML = ""; // Clear previous rows
+
+    const interestRate = 0.15; // 15% fixed interest as example
+
+    data.forEach(loan => {
+      const fullName = `${loan.applicants.name} ${loan.applicants.surname}`;
+      const loanAmount = loan.loan_amount;
+      const interest = loanAmount * interestRate;
+      const totalOwed = loanAmount + interest;
+      const duration = loan.repayment_months + (loan.repayment_months === 1 ? " month" : " months");
+      const status = loan.status || "Pending";
+
+      // Status class for styling
+      let statusClass = "";
+      if (status.toLowerCase() === "approved") statusClass = "approved";
+      else if (status.toLowerCase() === "pending") statusClass = "pending";
+      else if (status.toLowerCase() === "denied") statusClass = "denied";
+
+      const row = `
+        <tr>
+          <td>${fullName}</td>
+          <td>P${loanAmount.toLocaleString()}</td>
+          <td>${(interestRate * 100).toFixed(0)}%</td>
+          <td>P${totalOwed.toLocaleString()}</td>
+          <td>${duration}</td>
+          <td class="${statusClass}">${status.charAt(0).toUpperCase() + status.slice(1)}</td>
+        </tr>
+      `;
+
+      tbody.insertAdjacentHTML("beforeend", row);
+    });
+  }
+
+  // Load data on page load
+  loadLoanStatuses();
+</script>
 </body>
 </html>
