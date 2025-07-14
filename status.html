@@ -39,77 +39,80 @@
     <tbody></tbody>
   </table>
 
-  <script>
-    const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE'; // 🔁 Replace with your real key
-    const { createClient } = supabase;
-    const supabaseClient = createClient(supabaseUrl, supabaseKey);
+<script>
+  const supabaseUrl = 'https://cgitlcuheoncjmxxcipq.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaXRsY3VoZW9uY2pteHhjaXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NDg5ODEsImV4cCI6MjA2NjQyNDk4MX0.iVIEEhx6YIx4JgWseMwwddGLuKn6in4aUV_CHd2srmE'; // Keep your real key
+  const { createClient } = supabase;
+  const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
-    async function loadUserLoanStatus() {
-      const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+  async function loadUserLoanStatus() {
+    const { data: { user }, error } = await supabaseClient.auth.getUser();
 
-      if (sessionError || !session) {
-        window.location.href = "login.html"; // force login if not found
-        return;
-      }
+    const userEmailSpan = document.getElementById("user-email");
+    const logoutBtn = document.getElementById("logout-btn");
 
-      const user = session.user;
-      const userEmailSpan = document.getElementById("user-email");
-      const logoutBtn = document.getElementById("logout-btn");
-
-      userEmailSpan.textContent = `Logged in as: ${user.email}`;
-      logoutBtn.style.display = "inline-block";
-
-      // 🔍 Get applicant_id linked to user email
-      const { data: applicants, error: applicantError } = await supabaseClient
-        .from("applicants")
-        .select("applicant_id")
-        .eq("email", user.email);
-
-      if (applicantError || !applicants || applicants.length === 0) {
-        alert("No loan record found for this user.");
-        return;
-      }
-
-      const applicant_id = applicants[0].applicant_id;
-
-      // 📦 Get loans for this applicant
-      const { data: loans, error: loanError } = await supabaseClient
-        .from("loan_applications")
-        .select("*")
-        .eq("applicant_id", applicant_id);
-
-      if (loanError) {
-        alert("Error loading loans: " + loanError.message);
-        return;
-      }
-
-      const tbody = document.querySelector("#loan-status-table tbody");
-      tbody.innerHTML = "";
-
-      loans.forEach(loan => {
-        const interest = 15; // Static 15% interest
-        const totalOwed = (loan.loan_amount * 1.15).toFixed(2);
-
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>P${loan.loan_amount.toFixed(2)}</td>
-          <td>${interest}%</td>
-          <td>P${totalOwed}</td>
-          <td>${loan.repayment_months} month(s)</td>
-          <td class="${loan.status.toLowerCase()}">${loan.status}</td>
-        `;
-        tbody.appendChild(row);
-      });
+    if (error || !user) {
+      // Redirect to login if no user session
+      window.location.href = "login.html";
+      return;
     }
 
-    document.getElementById("logout-btn").addEventListener("click", async () => {
-      await supabaseClient.auth.signOut();
-      window.location.href = "login.html";
-    });
+    userEmailSpan.textContent = `Logged in as: ${user.email}`;
+    logoutBtn.style.display = "inline-block";
 
-    // 🔄 Run on page load
-    loadUserLoanStatus();
-  </script>
+    // Fetch the applicant_id by user email
+    const { data: applicants, error: applicantError } = await supabaseClient
+      .from("applicants")
+      .select("applicant_id")
+      .eq("email", user.email);
+
+    if (applicantError || !applicants || applicants.length === 0) {
+      alert("No loan record found for this user.");
+      return;
+    }
+
+    const applicant_id = applicants[0].applicant_id;
+
+    // Fetch loans linked to applicant_id
+    const { data: loans, error: loanError } = await supabaseClient
+      .from("loan_applications")
+      .select("*")
+      .eq("applicant_id", applicant_id);
+
+    if (loanError) {
+      alert("Error loading loans: " + loanError.message);
+      return;
+    }
+
+    const tbody = document.querySelector("#loan-status-table tbody");
+    tbody.innerHTML = "";
+
+    loans.forEach(loan => {
+      const interest = 15;
+      const totalOwed = (loan.loan_amount * 1.15).toFixed(2);
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>P${loan.loan_amount.toFixed(2)}</td>
+        <td>${interest}%</td>
+        <td>P${totalOwed}</td>
+        <td>${loan.repayment_months} month(s)</td>
+        <td class="${loan.status.toLowerCase()}">${loan.status}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  document.getElementById("logout-btn").addEventListener("click", async () => {
+    const { error } = await supabaseClient.auth.signOut();
+    if (!error) {
+      window.location.href = "login.html";
+    }
+  });
+
+  // Automatically load status if session is active
+  loadUserLoanStatus();
+</script>
+
 </body>
 </html>
